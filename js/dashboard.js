@@ -140,7 +140,7 @@ function renderTable(dataList) {
             <option value="SELESAI">SELESAI</option>
           </select>
           <button class="btn btn-call" onclick="handlePanggil('${item.no}', '${item.nama}')">PANGGIL</button>
-          <button class="btn btn-doc" onclick="handlePanggil('${item.no}')">DOKUMEN SESUAI</button>
+          <button class="btn btn-doc" onclick="handleSelesai('${item.no}')">DOKUMEN SESUAI</button>
         </div>
       </td>
     `;
@@ -245,4 +245,5 @@ loadData(false);
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
 
 setInterval(() => loadData(true), 150000);
+
 
