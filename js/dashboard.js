@@ -1,5 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxGFhVdIG0CY5TpRVmtfWNG9xka2Gp1SCNyLgsD13aGL4_kd-hEpKfsB0qSmsl5sG3u/exec'; 
-
+const API_URL = 'https://script.google.com/macros/s/AKfycbwVHJopBlYz2bQ-rEySbyXaQ6WM_V-6WuFAZfZlnf-ay2ZR9_2Em_oNmLc_a4FXGeDb/exec';
 const body = document.getElementById('antrianBody');
 const btnFinish = document.getElementById('btnFinishDay');
 
@@ -91,14 +90,14 @@ async function loadData(isBackgroundRefresh = false) {
   }
 }
 
+// ==========================================
+// FILE: dashboard.js -> Function renderTable
+// ==========================================
+
 function renderTable(dataList) {
-  // Kita simpan ID baris yang sedang dibuka (expanded) sebelum tabel di-render ulang
   const activeRow = document.querySelector('.row-main.active');
   const activeId = activeRow ? activeRow.querySelector('.col-left div').innerText : null;
 
-  // Kosongkan body untuk render ulang (Ini terjadi sangat cepat jadi user tidak sadar)
-  // Jika ingin lebih smooth lagi, kita bisa bandingkan data lama vs baru (Diffing), 
-  // tapi untuk kasus ini render ulang sudah cukup cepat.
   body.innerHTML = ''; 
 
   if(dataList.length === 0) {
@@ -111,17 +110,16 @@ function renderTable(dataList) {
     trMain.className = 'row-main';
     const selectId = `status-${item.no}`;
 
-    // Cek status selesai untuk warna hijau
     if (item.status === 'SELESAI') {
       trMain.classList.add('completed');
     }
 
-    // Jika baris ini tadi sedang dibuka (active), pasang lagi class active-nya
     let isRowActive = (item.no === activeId);
     if (isRowActive) {
         trMain.classList.add('active');
     }
 
+    // Bagian Main Row tidak berubah
     trMain.innerHTML = `
       <td class="col-left">
         <div>${item.no}</div>
@@ -145,20 +143,27 @@ function renderTable(dataList) {
       </td>
     `;
 
+    // Bagian Detail Row: Label disesuaikan & Ditambah Toko Transfer
     const trDetail = document.createElement('tr');
     trDetail.className = 'row-detail';
     
-    // Set display berdasarkan status active sebelumnya
     trDetail.style.display = isRowActive ? 'table-row' : 'none';
     
+    // PERUBAHAN TAMPILAN DI SINI
+    // Cash -> Tunai
+    // Deposit -> Non Tunai
+    // Tambah Toko Transfer sebelum Total
     trDetail.innerHTML = `
       <td colspan="2">
         <div class="detail-data">
-          <div class="box"><span>Cash</span><div class="value">${formatRupiah(item.cash)}</div></div>
+          <div class="box"><span>Tunai</span><div class="value">${formatRupiah(item.cash)}</div></div>
           <div class="box"><span>CRM</span><div class="value">${formatRupiah(item.crm)}</div></div>
-          <div class="box"><span>Deposit</span><div class="value">${formatRupiah(item.deposit)}</div></div>
+          <div class="box"><span>Non Tunai</span><div class="value">${formatRupiah(item.deposit)}</div></div>
           <div class="box"><span>Promo Cash</span><div class="value">${formatRupiah(item.promoCash)}</div></div>
           <div class="box"><span>Promo Credit</span><div class="value">${formatRupiah(item.promoCredit)}</div></div>
+          
+          <div class="box" style="background-color: #f0fdf4;"><span>Toko Transfer</span><div class="value">${formatRupiah(item.tokoTransfer)}</div></div>
+          
           <div class="box total-box"><span>Total</span><div class="value">${formatRupiah(item.total)}</div></div>
         </div>
       </td>
@@ -169,7 +174,6 @@ function renderTable(dataList) {
       
       const isOpen = trMain.classList.contains('active');
       
-      // Tutup semua yang lain
       document.querySelectorAll('.row-main').forEach(r => r.classList.remove('active'));
       document.querySelectorAll('.row-detail').forEach(r => r.style.display = 'none');
 
@@ -177,13 +181,10 @@ function renderTable(dataList) {
         trMain.classList.add('active');
         trDetail.style.display = 'table-row';
         
-        // Auto update status ke DIPROSES jika masih MENUNGGU
         const currentSelect = document.getElementById(selectId);
         if (item.status === 'MENUNGGU') {
             currentSelect.value = 'DIPROSES'; 
-            // Update teks status kecil di UI biar langsung berubah
             trMain.querySelector('.col-left div:last-child').innerHTML = 'Status: DIPROSES';
-            
             kirimUpdateStatus(item.no, 'DIPROSES', 'Auto-update saat view detail');
         }
       }
@@ -243,8 +244,4 @@ function formatRupiah(angka) {
 loadData(false);
 
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
-
 setInterval(() => loadData(true), 150000);
-
-
-
