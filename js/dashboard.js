@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbwVHJopBlYz2bQ-rEySbyXaQ6WM_V-6WuFAZfZlnf-ay2ZR9_2Em_oNmLc_a4FXGeDb/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx3LuQi1JVYkRXhHkNIBkTqP8VRlGRHR-oXXzUI7pRmryQsWJy4vDjWdzeoH-4sb1LZ/exec';
 const body = document.getElementById('antrianBody');
 const btnFinish = document.getElementById('btnFinishDay');
 
@@ -245,3 +245,4 @@ loadData(false);
 
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
 setInterval(() => loadData(true), 150000);
+
