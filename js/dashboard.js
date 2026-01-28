@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbx3LuQi1JVYkRXhHkNIBkTqP8VRlGRHR-oXXzUI7pRmryQsWJy4vDjWdzeoH-4sb1LZ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxTAn49pbhFmpSonDzFB54tppRPqT47NK9-vHXDzhLj6b5X1W8zlocYnF_jMD5h1rg8/exec';
 const body = document.getElementById('antrianBody');
 const btnFinish = document.getElementById('btnFinishDay');
 
@@ -32,38 +32,56 @@ updateDateTime(); // Jalankan langsung saat load
 // ==========================================
 // 2. LOGIK TOMBOL SELESAI HARI INI
 // ==========================================
-if(btnFinish) {
+if (btnFinish) {
   btnFinish.addEventListener('click', async () => {
-    if(!confirm("Yakin ingin menutup hari ini dan kirim Daily Report?")) return;
+    
+    // 1. Konfirmasi User
+    const yakin = confirm("Yakin ingin menutup hari ini? \nLaporan akan dikirim ke Email & WhatsApp Admin.");
+    if (!yakin) return;
 
-    const originalText = btnFinish.textContent;
-    btnFinish.textContent = 'Mengirim...';
+    // 2. Ambil Email User yang Login (dari localStorage)
+    const userEmail = localStorage.getItem('user_email') || 'Unknown User';
+
+    // 3. Ubah Tombol jadi Loading (biar gak diklik berkali-kali)
+    const originalText = btnFinish.innerText;
+    btnFinish.innerText = "⏳ Mengirim...";
     btnFinish.disabled = true;
+    btnFinish.style.opacity = "0.7";
 
     try {
-      const req = await fetch(API_URL, {
+      // 4. Kirim Request ke Backend
+	  const userEmail = localStorage.getItem('user_email') || 'Unknown User';
+      const response = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'FINISH_DAY' }) 
+        // Pake teknik text/plain stringify biar aman dari CORS di Apps Script
+        body: JSON.stringify({ 
+            action: 'FINISH_DAY',
+            actor: userEmail // <--- INI YG PENTING BRO (Email User)
+        }) 
       });
       
-      const res = await req.json();
-      
-      if(res.success) {
-        alert("✅ Laporan Harian Terkirim!");
+      const result = await response.json();
+
+      // 5. Cek Hasil dari Server
+      if (result.success) {
+        alert("✅ " + (result.message || "Laporan Harian Berhasil Dikirim!"));
+        // Opsional: Reload halaman biar fresh
+        location.reload(); 
       } else {
-        alert("❌ Gagal kirim laporan: " + res.message);
+        alert("❌ Gagal: " + (result.message || "Terjadi kesalahan server"));
       }
 
-    } catch (err) {
-      console.error(err);
-      alert("Gagal koneksi ke server.");
+    } catch (error) {
+      console.error("Error Finish Day:", error);
+      alert("⚠️ Gagal koneksi. Cek internet lo atau coba lagi.");
     } finally {
-      btnFinish.textContent = originalText;
+      // 6. Balikin tombol ke kondisi semula (apapun hasilnya)
+      btnFinish.innerText = originalText;
       btnFinish.disabled = false;
+      btnFinish.style.opacity = "1";
     }
   });
 }
-
 // ==========================================
 // 3. LOAD DATA (SMOOTH REFRESH)
 // ==========================================
@@ -222,13 +240,18 @@ function handleSelesai(noAntri) {
 }
 
 function kirimUpdateStatus(no, status, logMsg) {
+    // Ambil email yang disimpan pas login
+    // Asumsinya lo simpan dengan nama key 'user_email'
+    const userEmail = localStorage.getItem('user_email') || 'Unknown User';
+
     fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
             action: 'UPDATE_STATUS',
             no: no,
             status: status,
-            keterangan: logMsg
+            keterangan: logMsg,
+            actor: userEmail // <--- KIRIM EMAIL USER
         })
     })
     .then(res => res.json())
@@ -245,4 +268,7 @@ loadData(false);
 
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
 setInterval(() => loadData(true), 150000);
+
+
+
 
