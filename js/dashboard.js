@@ -179,10 +179,9 @@ function renderTable(dataList) {
           <div class="box"><span>Non Tunai</span><div class="value">${formatRupiah(item.deposit)}</div></div>
           <div class="box"><span>Promo Cash</span><div class="value">${formatRupiah(item.promoCash)}</div></div>
           <div class="box"><span>Promo Credit</span><div class="value">${formatRupiah(item.promoCredit)}</div></div>
-          
-          <div class="box" style="background-color: #f0fdf4;"><span>Toko Transfer</span><div class="value">${formatRupiah(item.tokoTransfer)}</div></div>
-          <div class="box" style="background-color: #fff7ed;"><span>Giro</span><div class="value">${formatRupiah(item.giro)}</div></div>
-          <div class="box total-box"><span>Total</span><div class="value">${formatRupiah(item.total)}</div></div>
+          <div class="box"><span>Toko Transfer</span><div class="value">${formatRupiah(item.tokoTransfer)}</div></div>
+          <div class="box"><span>Giro</span><div class="value">${formatRupiah(item.giro)}</div></div>
+          <div class="box total-box" style="background-color: #f0fdf4;"><span>Total</span><div class="value">${formatRupiah(item.total)}</div></div>
         </div>
       </td>
     `;
@@ -268,6 +267,7 @@ loadData(false);
 
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
 setInterval(() => loadData(true), 150000);
+
 
 
 
