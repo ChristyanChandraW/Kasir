@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbx3LuQi1JVYkRXhHkNIBkTqP8VRlGRHR-oXXzUI7pRmryQsWJy4vDjWdzeoH-4sb1LZ/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbxTAn49pbhFmpSonDzFB54tppRPqT47NK9-vHXDzhLj6b5X1W8zlocYnF_jMD5h1rg8/exec'; 
 // ⬆️ Pastikan Deploy Web App sebagai: "Execute as Me" dan "Who has access: Anyone"
 
 document.getElementById('loginForm').addEventListener('submit', async e => {
@@ -46,6 +46,7 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
     // simpan session sederhana
     localStorage.setItem('kasirNama', data.nama);
     localStorage.setItem('kasirNo', data.nomor);
+	localStorage.setItem('user_email', email); 
 
     window.location.href = data.redirect;
 
@@ -55,7 +56,4 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
     btn.disabled = false;
     btn.textContent = 'Login';
   }
-
 });
-
-
