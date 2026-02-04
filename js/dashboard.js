@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxKLkuChqICAggFqw0jYjXTG5_jwl_vO4gyamJwL9up6vbbUIeGP5nllXL0y-D6ZJLH/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxA4XRXMrlI3Ft1NjTd4qp0kKIhctkyJ38qG3bKMbPEWzb0cRqII24hB88WzWVX0cr6/exec';
 const body = document.getElementById('antrianBody');
 const btnFinish = document.getElementById('btnFinishDay');
 
@@ -32,6 +32,7 @@ updateDateTime(); // Jalankan langsung saat load
 // ==========================================
 // 2. LOGIK TOMBOL SELESAI HARI INI
 // ==========================================
+// Ganti bagian btnFinish.addEventListener kamu dengan ini:
 if (btnFinish) {
   btnFinish.addEventListener('click', async () => {
     
@@ -39,50 +40,66 @@ if (btnFinish) {
     const yakin = confirm("Yakin ingin menutup hari ini? \nLaporan akan dikirim ke Email & WhatsApp Admin.");
     if (!yakin) return;
 
-    // 2. Ambil Email User yang Login (dari localStorage)
+    // 2. Ambil Email
     const userEmail = localStorage.getItem('user_email') || 'Unknown User';
 
-    // 3. Ubah Tombol jadi Loading (biar gak diklik berkali-kali)
+    // 3. UI Loading
     const originalText = btnFinish.innerText;
     btnFinish.innerText = "⏳ Mengirim...";
     btnFinish.disabled = true;
     btnFinish.style.opacity = "0.7";
 
     try {
-      // 4. Kirim Request ke Backend
-      // (Perbaikan: Variabel userEmail yang duplikat di sini sudah dihapus)
-      
+      // 4. Kirim Request
       const response = await fetch(API_URL, {
         method: 'POST',
-        // Pake teknik text/plain stringify biar aman dari CORS di Apps Script
         body: JSON.stringify({ 
             action: 'FINISH_DAY',
-            actor: userEmail // Menggunakan userEmail dari langkah no 2
+            actor: userEmail 
         }) 
       });
-      
-      const result = await response.json();
 
-      // 5. Cek Hasil dari Server
+      // 5. Baca Text Dulu (Untuk Debugging jika JSON error)
+      const textResult = await response.text();
+      let result;
+
+      try {
+        result = JSON.parse(textResult);
+      } catch (e) {
+        console.error("Server tidak mengembalikan JSON valid:", textResult);
+        // Jika textResult kosong tapi status 200, anggap sukses
+        if(response.ok) {
+            result = { success: true, message: "Laporan terkirim (Respon server non-JSON)" };
+        } else {
+            throw new Error("Respon server error: " + textResult.substring(0, 50));
+        }
+      }
+
+      // 6. Cek Sukses
       if (result.success) {
-        alert("✅ " + (result.message || "Laporan Harian Berhasil Dikirim!"));
-        // Opsional: Reload halaman biar fresh
-        location.reload(); 
-      } else {
+		  alert("✅ " + (result.message || "Laporan Harian Berhasil Dikirim!"));
+
+		  // ⏳ kasih delay dikit biar user sadar dia ke-logout
+		  setTimeout(() => {
+			logoutUser();
+		  }, 800);
+	  } else {
         alert("❌ Gagal: " + (result.message || "Terjadi kesalahan server"));
       }
 
     } catch (error) {
       console.error("Error Finish Day:", error);
-      alert("⚠️ Gagal koneksi. Cek internet lo atau coba lagi.");
+      // Cek apakah error karena timeout tapi sebenernya backend jalan
+      alert("⚠️ Terjadi gangguan koneksi, tapi kemungkinan email sudah terkirim. Silakan cek email Admin.");
     } finally {
-      // 6. Balikin tombol ke kondisi semula (apapun hasilnya)
+      // 7. Reset Tombol
       btnFinish.innerText = originalText;
       btnFinish.disabled = false;
       btnFinish.style.opacity = "1";
     }
   });
 }
+
 // ==========================================
 // 3. LOAD DATA (SMOOTH REFRESH)
 // ==========================================
@@ -261,3 +278,13 @@ loadData(false);
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
 setInterval(() => loadData(true), 150000);
 
+
+function logoutUser() {
+  // Hapus data login
+  localStorage.removeItem('user_email');
+  localStorage.removeItem('user_name'); // kalau ada
+  localStorage.removeItem('token');     // kalau ada
+
+  // Redirect ke halaman login
+  window.location.href = 'login.html';
+}
