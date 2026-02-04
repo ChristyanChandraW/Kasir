@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxKLkuChqICAggFqw0jYjXTG5_jwl_vO4gyamJwL9up6vbbUIeGP5nllXL0y-D6ZJLH/exec'; 
+const API_URL = 'https://script.google.com/macros/s/AKfycbxA4XRXMrlI3Ft1NjTd4qp0kKIhctkyJ38qG3bKMbPEWzb0cRqII24hB88WzWVX0cr6/exec'; 
 // ⬆️ Pastikan Deploy Web App sebagai: "Execute as Me" dan "Who has access: Anyone"
 
 document.getElementById('loginForm').addEventListener('submit', async e => {
@@ -57,5 +57,6 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
     btn.textContent = 'Login';
   }
 });
+
 
 
