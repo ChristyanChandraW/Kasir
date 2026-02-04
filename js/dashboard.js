@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxTAn49pbhFmpSonDzFB54tppRPqT47NK9-vHXDzhLj6b5X1W8zlocYnF_jMD5h1rg8/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbws_S0n51JjOnsQbQo0vpjm_MD3aTIPJ2u6G0Foi8mtJT4nDVesv30vJ6PuLJw7KMIQ/exec';
 const body = document.getElementById('antrianBody');
 const btnFinish = document.getElementById('btnFinishDay');
 
@@ -50,13 +50,14 @@ if (btnFinish) {
 
     try {
       // 4. Kirim Request ke Backend
-	  const userEmail = localStorage.getItem('user_email') || 'Unknown User';
+      // (Perbaikan: Variabel userEmail yang duplikat di sini sudah dihapus)
+      
       const response = await fetch(API_URL, {
         method: 'POST',
         // Pake teknik text/plain stringify biar aman dari CORS di Apps Script
         body: JSON.stringify({ 
             action: 'FINISH_DAY',
-            actor: userEmail // <--- INI YG PENTING BRO (Email User)
+            actor: userEmail // Menggunakan userEmail dari langkah no 2
         }) 
       });
       
@@ -91,9 +92,6 @@ async function loadData(isBackgroundRefresh = false) {
      body.innerHTML = '<tr><td colspan="2" style="text-align:center; padding: 20px;">Memuat data...</td></tr>';
   }
 
-  // Indikator loading kecil di console atau bisa di UI (opsional)
-  // console.log("Fetching data in background...");
-
   try {
     const response = await fetch(`${API_URL}?action=getAntrian`);
     const data = await response.json();
@@ -109,7 +107,7 @@ async function loadData(isBackgroundRefresh = false) {
 }
 
 // ==========================================
-// FILE: dashboard.js -> Function renderTable
+// 4. RENDER TABLE & LOGIC LAIN
 // ==========================================
 
 function renderTable(dataList) {
@@ -137,7 +135,7 @@ function renderTable(dataList) {
         trMain.classList.add('active');
     }
 
-    // Bagian Main Row tidak berubah
+    // Bagian Main Row
     trMain.innerHTML = `
       <td class="col-left">
         <div>${item.no}</div>
@@ -161,16 +159,12 @@ function renderTable(dataList) {
       </td>
     `;
 
-    // Bagian Detail Row: Label disesuaikan & Ditambah Toko Transfer
+    // Bagian Detail Row
     const trDetail = document.createElement('tr');
     trDetail.className = 'row-detail';
     
     trDetail.style.display = isRowActive ? 'table-row' : 'none';
     
-    // PERUBAHAN TAMPILAN DI SINI
-    // Cash -> Tunai
-    // Deposit -> Non Tunai
-    // Tambah Toko Transfer sebelum Total
     trDetail.innerHTML = `
       <td colspan="2">
         <div class="detail-data">
@@ -179,9 +173,10 @@ function renderTable(dataList) {
           <div class="box"><span>Non Tunai</span><div class="value">${formatRupiah(item.deposit)}</div></div>
           <div class="box"><span>Promo Cash</span><div class="value">${formatRupiah(item.promoCash)}</div></div>
           <div class="box"><span>Promo Credit</span><div class="value">${formatRupiah(item.promoCredit)}</div></div>
-          <div class="box"><span>Toko Transfer</span><div class="value">${formatRupiah(item.tokoTransfer)}</div></div>
-          <div class="box"><span>Giro</span><div class="value">${formatRupiah(item.giro)}</div></div>
-          <div class="box total-box" style="background-color: #f0fdf4;"><span>Total</span><div class="value">${formatRupiah(item.total)}</div></div>
+          
+          <div class="box" style="background-color: #f0fdf4;"><span>Toko Transfer</span><div class="value">${formatRupiah(item.tokoTransfer)}</div></div>
+          <div class="box" style="background-color: #fff7ed;"><span>Giro</span><div class="value">${formatRupiah(item.giro)}</div></div>
+          <div class="box total-box"><span>Total</span><div class="value">${formatRupiah(item.total)}</div></div>
         </div>
       </td>
     `;
@@ -239,8 +234,6 @@ function handleSelesai(noAntri) {
 }
 
 function kirimUpdateStatus(no, status, logMsg) {
-    // Ambil email yang disimpan pas login
-    // Asumsinya lo simpan dengan nama key 'user_email'
     const userEmail = localStorage.getItem('user_email') || 'Unknown User';
 
     fetch(API_URL, {
@@ -250,7 +243,7 @@ function kirimUpdateStatus(no, status, logMsg) {
             no: no,
             status: status,
             keterangan: logMsg,
-            actor: userEmail // <--- KIRIM EMAIL USER
+            actor: userEmail 
         })
     })
     .then(res => res.json())
@@ -267,9 +260,3 @@ loadData(false);
 
 // Auto refresh setiap 150 detik (background, tanpa loading teks)
 setInterval(() => loadData(true), 150000);
-
-
-
-
-
-
